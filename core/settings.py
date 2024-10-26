@@ -68,6 +68,7 @@ if not DEBUG:
 
 #INSTALLED_APPS = [
 DJANGO_APPS = [
+    'apps.contas',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -83,7 +84,7 @@ THIRD_APPS = [
 PROJECT_APPS = [
     'apps.base',
     'apps.pages',
-    'apps.contas',
+    #'apps.contas',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_APPS + PROJECT_APPS
@@ -201,6 +202,11 @@ SESSION_TIMEOUT_REDIRECT = 'http://localhost:8000/contas/timeout/'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Internationalization
+# https://docs.djangoproject.com/en/5.1/topics/i18n/
 
 REQUESTLOGS = {
     'SECRETS': ['password', 'token'],
