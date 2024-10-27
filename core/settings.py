@@ -83,6 +83,7 @@ THIRD_APPS = [
 
 PROJECT_APPS = [
     'apps.base',
+    'apps.perfil',
     'apps.pages',
     #'apps.contas',
 ]
