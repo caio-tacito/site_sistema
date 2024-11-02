@@ -22,7 +22,8 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     #path("accounts/", include("django.contrib.auth.urls")),
-    path('contas/', include('contas.urls')), # url do app
+    path('contas/', include('contas.urls')), # url de contas
+    path('perfil/', include('perfil.urls')), # url do perfil
     path('', include('pages.urls')), # url do app
 ]
 

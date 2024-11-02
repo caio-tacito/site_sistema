@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 
 from contas.forms import CustomUserCreationForm, UserChangeForm
 from contas.models import MyUser
+from perfil.models import Perfil
 from contas.permissions import grupo_colaborador_required
 
 # Create your views here.
@@ -23,7 +24,6 @@ def login_view(request):
         password = request.POST.get('password')
         user = authenticate(request, email=email, password=password)
         if user is not None:
-            print(user)
             login(request, user)
             return redirect('home')
         else:
@@ -42,9 +42,11 @@ def register_view(request):
             usuario = form.save(commit=False)
             usuario.is_valid = False
             usuario.save()
-            
+
             group = Group.objects.get(name='usuario')
             usuario.groups.add(group)
+            
+            Perfil.objects.create(usuario=usuario) # Cria instancia perfil do usuário
             
             messages.success(request, 'Registrado. Agora faça o login para começar!')
             return redirect('login')
@@ -69,8 +71,9 @@ def atualizar_meu_usuario(request):
 
 @login_required()
 @grupo_colaborador_required(['administrador','colaborador'])
-def atualizar_usuario(request, user_id):
-    user = get_object_or_404(MyUser, pk=user_id)
+def atualizar_usuario(request, username):
+    #user = get_object_or_404(MyUser, pk=user_id)
+    user = get_object_or_404(MyUser, username=username)
     if request.method == 'POST':
         form = UserChangeForm(request.POST, instance=user, user=request.user)
         if form.is_valid():

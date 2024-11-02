@@ -6,7 +6,7 @@ from contas.models import MyUser
 class MyUserAdmin(UserAdmin):
     #add_form = UserCreationForm
     model = MyUser
-    list_display = ('email', 'first_name', 'last_name', 'is_active', 'is_staff')
+    list_display = ('email', 'username', 'first_name', 'last_name', 'is_active', 'is_staff')
     list_filter = ('is_active', 'is_staff')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
