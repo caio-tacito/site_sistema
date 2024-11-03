@@ -82,9 +82,20 @@ def editar_postagem_forum(request, id):
     if request.method == 'POST':
         form = PostagemForumForm(request.POST, instance=postagem)
         if form.is_valid():
-            form.save()
-            messages.warning(request, message)
-            return redirect(redirect_route)
+            
+            contar_imagens = postagem.postagem_imagens.count() # Quantidade de imagens sque já tenho no post
+            postagem_imagens = request.FILES.getlist('postagem_imagens') # Quantidade de imagens que estou enviando para salvar
+            
+            if contar_imagens + len(postagem_imagens) > 5:
+                messages.error(request, 'Você só pode adicionar no máximo 5 imagens.')
+                return redirect(redirect_route)
+            else:
+                form.save()
+                for f in postagem_imagens: # for para pegar as imagens e salvar.
+                    models.PostagemForumImagem.objects.create(postagem=postagem, imagem=f)
+                    
+                messages.warning(request, message)
+                return redirect(redirect_route)
         else:
             add_form_errors_to_messages(request, form)
     return JsonResponse({'status': 'Ok'}) # Coloca por enquanto.
@@ -104,3 +115,13 @@ def deletar_postagem_forum(request, id):
         return redirect(redirect_route)
 
     return JsonResponse({'status':message})
+
+def remover_imagem(request):
+    imagem_id = request.GET.get('imagem_id') # Id da imagem
+    verifica_imagem = models.PostagemForumImagem.objects.filter(id=imagem_id) # Filtra pra ver se imagem existe...
+    if verifica_imagem:
+        postagem_imagem = models.PostagemForumImagem.objects.get(id=imagem_id) # pega a imagem
+        # Excluir a imagem do banco de dados e do sistema de arquivos (pasta postagem-forum/)
+        postagem_imagem.imagem.delete()
+        postagem_imagem.delete()
+    return JsonResponse({'message': 'Imagem removida com sucesso.'})
