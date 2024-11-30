@@ -2,12 +2,13 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.core.paginator import Paginator
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.decorators import login_required
 
 from core import settings
-from base.utils import add_form_errors_to_messages
+from base.utils import add_form_errors_to_messages, filtrar_modelo
 from contas.forms import CustomUserCreationForm, UserChangeForm
 from contas.models import MyUser
 from perfil.forms import PerfilForm
@@ -163,6 +164,34 @@ def atualizar_usuario(request, username):
 def lista_usuarios(request): # Lista Cliente 
     lista_usuarios = MyUser.objects.select_related('perfil').filter(is_superuser=False) 
     return render(request, 'lista-usuarios.html', {'lista_usuarios': lista_usuarios})
+
+
+#Lista Todos usuarios do sistema
+@login_required
+@grupo_colaborador_required(['administrador','colaborador'])
+def lista_usuarios(request):
+    
+    #perfil_postagens = perfil.user_postagem_forum.all() # Todas as postagens relacionadas
+    lista_usuarios = MyUser.objects.select_related('perfil').filter(is_superuser=False)
+
+    filtros = {}
+    valor_busca = request.GET.get("titulo") # Pega parametro
+    if valor_busca:
+        # Adiciono no dicionario
+        filtros['first_name'] = valor_busca
+        filtros['last_name'] = valor_busca
+        filtros['email'] = valor_busca
+    # lista_usuarios = filtrar_modelo(lista_usuarios.model, **filtros)
+    # Estou passando o Query set já filtrado, em vez do model
+    lista_usuarios = filtrar_modelo(lista_usuarios, **filtros)
+    print(f'lista_usuarios -> lista_usuarios: {lista_usuarios}')
+    
+    paginacao = Paginator(lista_usuarios, 3)
+    pagina_numero = request.GET.get("page")
+    page_obj = paginacao.get_page(pagina_numero)
+    context = {'page_obj': page_obj}
+    return render(request, 'lista-usuarios.html', context)
+
 
 # Adicionar Novo Usuário
 @login_required

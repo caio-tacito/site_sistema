@@ -24,18 +24,18 @@
                     <!-- Modal -->
                     <div class="modal fade" id="imagemModal{{ imagem.id }}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-dialog-centered modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                            <h2 class="modal-title fs-5" id="exampleModalLabel">
-                                <i class="link-info fas fa-image fa-2x me-2"></i></h2>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h2 class="modal-title fs-5" id="exampleModalLabel">
+                                        <i class="link-info fas fa-image fa-2x me-2"></i></h2>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <img src="{{ imagem.imagem.url }}" alt="Imagem da postagem" class="img-fluid">
+                                </div>
+                                <div class="modal-footer">
+                                </div>
                             </div>
-                            <div class="modal-body">
-                                <img src="{{ imagem.imagem.url }}" alt="Imagem da postagem" class="img-fluid">
-                            </div>
-                            <div class="modal-footer">
-                            </div>
-                        </div>
                         </div>
                     </div>
                     {% endfor %}

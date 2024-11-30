@@ -2,14 +2,24 @@ import re
 from django.contrib import messages  
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
+from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 
 from forum import models
 from forum.forms import PostagemForumForm
-from base.utils import add_form_errors_to_messages
+from base.utils import add_form_errors_to_messages, filtrar_modelo
 
 # Lista de Postagens
 def lista_postagem_forum(request):
+    form_dict = {}
+    filtros = {}
+    
+    valor_busca = request.GET.get("titulo")
+    print(f'lista_postagem_forum -> titulo_busca: {valor_busca}')
+    if valor_busca:
+        filtros["titulo"] = valor_busca
+        filtros["descricao"] = valor_busca
+    
     if request.path == '/forum/': # Pagina forum da home, mostrar tudo ativo.
         postagens = models.PostagemForum.objects.filter(ativo=True)
         template_view = 'lista-postagem-forum.html' # lista de post da rota /forum/
@@ -24,14 +34,34 @@ def lista_postagem_forum(request):
         else:
             # Usuário é do grupo usuário, pode ver apenas suas próprias postagens
             postagens = models.PostagemForum.objects.filter(usuario=user)
-            
+    
+    #Realiza a busca pelo titulo        
+    #postagens = filtrar_modelo(models.PostagemForum, **filtros)
+    # Passa o queryset, ao invés do model
+    postagens = filtrar_modelo(postagens, **filtros)
+    
     # Como existe uma lista de objetos, para aparecer o formulário 
 	# correspondente no modal precisamos ter um for
     form_dict = {}
     for el in postagens:
         form = PostagemForumForm(instance=el) 
         form_dict[el] = form
-    context = {'postagens': postagens,'form_dict': form_dict}
+        
+    # Criar uma lista de tuplas (postagem, form) a partir do form_dict
+    form_list = [(postagem, form) for postagem, form in form_dict.items()]
+    
+     # Aplicar a paginação à lista de tuplas
+    paginacao = Paginator(form_list, 3) # '3' é numero de registro por pagina
+    
+    # Obter o número da página a partir dos parâmetros da URL
+    pagina_numero = request.GET.get("page")
+    page_obj = paginacao.get_page(pagina_numero)
+    
+    # Criar um novo dicionário form_dict com base na página atual
+    form_dict = {postagem: form for postagem, form in page_obj}    
+    
+    #context = {'postagens': postagens,'form_dict': form_dict}
+    context = {'page_obj': page_obj, 'form_dict': form_dict}
     return render(request, template_view, context)
 
 # Formulário para Criar Postagem
@@ -56,18 +86,18 @@ def criar_postagem_forum(request):
             add_form_errors_to_messages(request, form)
     return render(request, 'form-postagem-forum.html', {'form': form})
 
-# Detalhes da Postagem (ID)
-def detalhe_postagem_forum(request, id):
-    postagem = get_object_or_404(models.PostagemForum, id=id)
+# Detalhes da Postagem (SLUG)
+def detalhe_postagem_forum(request, slug):
+    postagem = get_object_or_404(models.PostagemForum, slug=slug)
     form = PostagemForumForm(instance=postagem)
     context = {'postagem': postagem, 'form': form}
     return render(request, 'detalhe-postagem-forum.html', context)
 
-# Editar Postagem (ID)
+# Editar Postagem (slug)
 @login_required
-def editar_postagem_forum(request, id):
+def editar_postagem_forum(request, slug):
     redirect_route = request.POST.get('redirect_route', '')
-    postagem = get_object_or_404(models.PostagemForum, id=id)
+    postagem = get_object_or_404(models.PostagemForum, slug=slug)
     message = 'Seu Post '+ postagem.titulo + ' foi atualizado com sucesso!'
 
     # Verifica se o usuário autenticado é o autor da postagem
@@ -100,11 +130,11 @@ def editar_postagem_forum(request, id):
             add_form_errors_to_messages(request, form)
     return JsonResponse({'status': 'Ok'}) # Coloca por enquanto.
 
-# Deletar Postagem (ID)
+# Deletar Postagem (slug)
 @login_required 
-def deletar_postagem_forum(request, id):
+def deletar_postagem_forum(request, slug):
     redirect_route = request.POST.get('redirect_route', '')
-    postagem = get_object_or_404(models.PostagemForum, id=id)
+    postagem = get_object_or_404(models.PostagemForum, slug=slug)
     message = 'Seu Post '+postagem.titulo+' foi deletado com sucesso!' 
     if request.method == 'POST':
         postagem.delete()
