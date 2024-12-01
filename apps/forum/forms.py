@@ -1,6 +1,6 @@
 from django import forms
 from django.conf import settings
-from .models import PostagemForum
+from .models import PostagemForum, PostagemForumComentario
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -34,3 +34,12 @@ class PostagemForumForm(forms.ModelForm):
                 field.widget.attrs['class'] = 'form-check-input'
             else:
                 field.widget.attrs['class'] = 'form-control'
+
+class PostagemForumComentarioForm(forms.ModelForm):
+    class Meta:
+        model = PostagemForumComentario
+        fields = ['comentario']
+        widgets = {
+            'comentario': forms.Textarea(
+                attrs={'class': 'form-control', 'rows': 3})
+        }

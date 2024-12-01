@@ -1,9 +1,17 @@
-from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.decorators import login_required 
+from django.shortcuts import get_object_or_404, render, redirect
+from django.core.paginator import Paginator
+from django.contrib import messages  
+
+from contas.models import MyUser
+from contas.forms import UserChangeForm
 
 from apps.base.utils import filtrar_modelo
 from forum.forms import PostagemForumForm
-from contas.models import MyUser
-from django.core.paginator import Paginator
+
+from perfil.forms import PerfilForm
+from perfil.models import Perfil
+
 
 def perfil_view(request, username):
     filtro = MyUser.objects.select_related('perfil').prefetch_related('user_postagem_forum')
@@ -41,3 +49,33 @@ def perfil_view(request, username):
     form_dict = {postagem: form for postagem, form in page_obj}
     context = {'obj': perfil, 'page_obj': page_obj, 'form_dict':form_dict}
     return render(request, 'perfil.html', context)
+
+
+@login_required 
+def editar_perfil(request, username):
+    redirect_route = request.POST.get('redirect_route', '')
+    modelo_myuser = MyUser.objects.get(username=username)
+    modelo_perfil = Perfil.objects.get(usuario__username=username)
+    message = 'Seu Perfil foi atualizado com sucesso!'
+
+    #print(f'editar_perfil -> request.user.username: {request.user.username}')
+    #print(f'editar_perfil -> request.user.is_superuser: {request.user.is_superuser}')
+    #print(f'editar_perfil -> request.user.groups.all(): {request.user.groups.all()}')
+    if request.user.username != modelo_myuser.username and not (
+        ['administrador', 'colaborador'] in request.user.groups.all() or request.user.is_superuser):
+        return redirect('lista-postagem-forum')  # Adicionar uma rota "sem permissão"
+
+    if request.method == 'POST':
+        form_contas = UserChangeForm(request.POST, user=request.user, instance=modelo_myuser)
+        form_perfil = PerfilForm(request.POST, request.FILES, instance=modelo_perfil)
+        if form_perfil.is_valid() and form_contas.is_valid():
+            form_contas.save()
+            form_perfil.save()
+            messages.warning(request, message)
+            return redirect(redirect_route)
+    else:
+        form_contas = UserChangeForm(user=request.user, instance=modelo_myuser)
+        form_perfil = PerfilForm(instance=modelo_perfil)
+
+    context = {'form_perfil': form_perfil, 'form_contas': form_contas, 'obj': modelo_myuser}
+    return render(request, 'editar-perfil-form.html', context)

@@ -11,4 +11,10 @@ urlpatterns = [
     
     # AJAX
     path('remover-imagem/', views.remover_imagem, name='remover-imagem'),
+    
+    # Comentarios
+    path('adicionar-comentario/<str:slug>/', views.adicionar_comentario, name='adicionar-comentario'),
+    path('editar-comentario/<int:comentario_id>/', views.editar_comentario, name='editar-comentario'),
+    path('deletar-comentario/<int:comentario_id>/', views.deletar_comentario, name='deletar-comentario'),
+    path('responder-comentario/<int:comentario_id>/', views.responder_comentario, name='responder-comentario'),
 ]
