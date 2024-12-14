@@ -21,6 +21,14 @@
     border: none;
 }
 
+.banner {
+    padding: 8em 0;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    position: relative;
+}
+
 @media (min-width: 968px) {
     .bloco {
         padding-left: 250px;

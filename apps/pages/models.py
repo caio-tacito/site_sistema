@@ -40,6 +40,8 @@ class Conteudo(models.Model):
     
     descricao_1 = models.CharField(max_length=200, null=True, blank=True, help_text="Descrição mais curta até 200 caracteres")
     descricao_2 = models.TextField(null=True, blank=True, help_text="Descrição mais longa")
+    descricao_3 = models.CharField(max_length=200, null=True, blank=True, help_text="Descrição mais curta até 200 caracteres")
+    descricao_4 = models.TextField(max_length=200, null=True, blank=True, help_text="Descrição mais curta até 200 caracteres")
     
     titulo_botao_1 = models.CharField(max_length=50, null=True, blank=True,help_text="Titulo do Botão 1")
     rota_botao_1 = models.CharField(max_length=50, null=True, blank=True,help_text="Nome da Rota que configurou no urls.py")
